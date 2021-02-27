@@ -14,8 +14,11 @@ class DraftManager():
 
     def __init__(self):
         self.area = TextArea()
-        self.area.title = "Talon Buffer"
-        self.area.theme = DarkThemeLabels()
+        self.area.title = "Talon Draft"
+        self.area.theme = DarkThemeLabels(
+            text_size=20,
+            label_size=20
+        )
         self.area.value = ''
         self.area.register('label', self._update_labels)
 
@@ -220,8 +223,5 @@ if False:
     # Some code for testing, change above False to True and edit as desired
     draft_manager = DraftManager()
     draft_manager.show("This is some text\nand another line of text and some more text so that the line gets so long that it wraps a bit.\nAnd a final sentence")
-    rect = draft_manager.area.rect
-    rect.x = 100
-    rect.y = 100
-    draft_manager.area.rect = rect
+    draft_manager.reposition(xpos=100, ypos=100)
     draft_manager.select_text('c')

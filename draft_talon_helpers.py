@@ -64,18 +64,12 @@ class Actions:
 
         return draft_manager.get_text()
 
-    def draft_reposition(
-            xpos: Optional[int]=None,
-            ypos: Optional[int]=None,
-            width: Optional[int]=None,
-            height: Optional[int]=None):
+    def draft_resize(width: int, height: int):
         """
-        Move or resize the draft window without having to specify all parameters.
+        Resize the draft window.
         """
 
         draft_manager.reposition(
-            xpos=xpos,
-            ypos=ypos,
             width=width,
             height=height
         )
