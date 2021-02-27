@@ -1,4 +1,4 @@
-This reposiory is a [Talon](https://talonvoice.com/) script that allows you to more easily edit prose style text via a task-specific UI.
+This reposiory is a [Talon](https://talonvoice.com/) script that allows you to more easily edit prose style text via a task-specific UI. It currently requires the beta version of Talon.
 
 # Usage
 
@@ -6,7 +6,7 @@ The `draft_window.talon` file depends on functions and lists defined by the [kna
 
 Once that's set up, an example voice command session might go like:
 
-    draft show # Show the window
+    draft show left # Show the window on the left of your screen
     sentence how are you # Types this in to the window, this is knausj
     replace cap with your family # Replaces the word corresponding to 'c' ('you') with 'your family'
     word lower air # Make the word corresponding to 'a' (how) lowercase
