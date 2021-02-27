@@ -1,9 +1,11 @@
 from typing import Optional
 
-from talon import ui, Module
+from talon import ui, Module, Context
 from .draft_ui import DraftManager
 
 mod = Module()
+ctx = Context()
+mod.tag("draft_window_showing", desc="Tag set when draft window showing")
 
 draft_manager = DraftManager()
 
@@ -15,6 +17,7 @@ class Actions:
         """
 
         draft_manager.show(text)
+        ctx.tags = ["user.draft_window_showing"]
 
     def draft_hide():
         """
@@ -22,6 +25,7 @@ class Actions:
         """
 
         draft_manager.hide()
+        ctx.tags = []
 
     def draft_select(
             start_anchor: str,
@@ -106,19 +110,10 @@ class Actions:
 # Some capture groups we need
 
 @mod.capture(rule="{self.letter}+")
-def draft_anchor1(m) -> str:
+def draft_anchor(m) -> str:
     """
     An anchor (string of letters)
     """
-    return "".join(m)
-
-
-@mod.capture(rule="{self.letter}+")
-def draft_anchor2(m) -> str:
-    """
-    An anchor (string of letters)
-    """
-
     return "".join(m)
 
 

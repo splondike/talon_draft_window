@@ -114,11 +114,11 @@ class DraftManager():
 
     def change_case(self, anchor, case):
         """
-        Positions the caret before the given anchor. If after=True position it directly after.
+        Change the case of the given word (Title case, UPPER case, lower case).
         """
 
         start_index, end_index, _ = self.anchor_to_range(anchor)
-        text = self.area.value[start_index:end_index]
+        text = self.area[start_index:end_index]
         if case == 'lower':
             updated_text = text.lower()
         elif case == 'upper':
