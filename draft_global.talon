@@ -5,6 +5,12 @@ mode: command
     user.draft_hide()
     user.draft_show()
 
+^draft show <user.draft_window_position>$:
+    # Do this toggle so we can have focus when saying 'draft show'
+    user.draft_hide()
+    user.draft_show()
+    user.draft_named_move(draft_window_position)
+
 ^draft hide$: user.draft_hide()
 
 ^draft edit$:

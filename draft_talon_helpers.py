@@ -1,6 +1,6 @@
 from typing import Optional
 
-from talon import Module
+from talon import ui, Module
 from .draft_ui import DraftManager
 
 mod = Module()
@@ -64,11 +64,55 @@ class Actions:
 
         return draft_manager.get_text()
 
+    def draft_reposition(
+            xpos: Optional[int]=None,
+            ypos: Optional[int]=None,
+            width: Optional[int]=None,
+            height: Optional[int]=None):
+        """
+        Move or resize the draft window without having to specify all parameters.
+        """
+
+        draft_manager.reposition(
+            xpos=xpos,
+            ypos=ypos,
+            width=width,
+            height=height
+        )
+
+    def draft_named_move(name: str, screen_number: Optional[int]=None):
+        """
+        Lets you move the window to the top, bottom, left, right, or middle
+        of the screen.
+        """
+
+        screen = ui.screens()[screen_number or 0]
+        window_rect = draft_manager.get_rect()
+        xpos = (screen.width - window_rect.width) / 2
+        ypos = (screen.height - window_rect.height) / 2
+
+        if name == 'top':
+            ypos = 50
+        elif name == 'bottom':
+            ypos = screen.height - window_rect.height - 50
+        elif name == 'left':
+            xpos = 50
+        elif name == 'right':
+            xpos = screen.width - window_rect.width - 50
+        elif name == 'middle':
+            # That's the default values
+            pass
+
+        draft_manager.reposition(
+            xpos=xpos,
+            ypos=ypos
+        )
+
 
 # Some capture groups we need
 
 @mod.capture(rule="{self.letter}+")
-def anchor1(m) -> str:
+def draft_anchor1(m) -> str:
     """
     An anchor (string of letters)
     """
@@ -76,9 +120,18 @@ def anchor1(m) -> str:
 
 
 @mod.capture(rule="{self.letter}+")
-def anchor2(m) -> str:
+def draft_anchor2(m) -> str:
     """
     An anchor (string of letters)
+    """
+
+    return "".join(m)
+
+
+@mod.capture(rule="(top|bottom|left|right|middle)")
+def draft_window_position(m) -> str:
+    """
+    One of the named positions you can move the window to
     """
 
     return "".join(m)

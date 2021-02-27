@@ -1,3 +1,5 @@
+from typing import Optional
+
 from talon.experimental.textarea import (
     TextArea,
     Span,
@@ -17,16 +19,61 @@ class DraftManager():
         self.area.value = ''
         self.area.register('label', self._update_labels)
 
-    def show(self, text=""):
+    def show(self, text: Optional[str]=None):
+        """
+        Show the window. If text is None then keep the old contents,
+        otherwise set the text to the given value.
+        """
+
         if text is not None:
             self.area.value = text
         self.area.show()
 
     def hide(self):
+        """
+        Hide the window.
+        """
+
         self.area.hide()
 
-    def get_text(self):
+    def get_text(self) -> str:
+        """
+        Gets the context of the text area
+        """
+
         return self.area.value
+
+    def get_rect(self) -> 'talon.types.Rect':
+        """
+        Get the Rect for the window
+        """
+
+        return self.area.rect
+
+    def reposition(
+            self,
+            xpos: Optional[int]=None,
+            ypos: Optional[int]=None,
+            width: Optional[int]=None,
+            height: Optional[int]=None):
+        """
+        Move the window or resize it without having to change all properties.
+        """
+
+        rect = self.area.rect
+        if xpos is not None:
+            rect.x = xpos
+
+        if ypos is not None:
+            rect.y = ypos
+
+        if width is not None:
+            rect.width = width
+
+        if height is not None:
+            rect.height = height
+
+        self.area.rect = rect
 
     def select_text(self, start_anchor, end_anchor=None, include_trailing_whitespace=False):
         """
