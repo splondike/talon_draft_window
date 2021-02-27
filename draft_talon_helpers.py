@@ -9,10 +9,6 @@ draft_manager = DraftManager()
 
 @mod.action_class
 class Actions:
-    # TODO:
-    # * The window doesn't work perfectly with all the standard editor commands. Particularly
-    #   'undo that' doesn't always behave how it should.
-
     def draft_show(text: Optional[str]=None):
         """
         Shows draft window

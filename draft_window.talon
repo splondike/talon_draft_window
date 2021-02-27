@@ -1,4 +1,4 @@
-title:Talon Draft
+title:/Talon Buffer/
 -
 # Replace a single word with a phrase
 ^replace <user.anchor1> with <user.text>$:

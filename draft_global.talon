@@ -1,6 +1,9 @@
 mode: command
 -
-^draft show$: user.draft_show()
+^draft show$:
+    # Do this toggle so we can have focus when saying 'draft show'
+    user.draft_hide()
+    user.draft_show()
 
 ^draft hide$: user.draft_hide()
 
