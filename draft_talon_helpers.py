@@ -14,18 +14,16 @@ mod.tag("draft_window_showing", desc="Tag set when draft window showing")
 draft_manager = DraftManager()
 
 
-@ctx.action_class("user")
-class dictation_actions:
-    def dictation_peek_left(clobber=False):
-        print("peeking")
-        area = draft_manager.area
-        return area[max(0, area.sel.left - 50) : area.sel.left]
+# for rntz's context-sensitive dictation
+# @ctx.action_class("user")
+# class dictation_actions:
+#     def dictation_peek_left(clobber=False):
+#         area = draft_manager.area
+#         return area[max(0, area.sel.left - 50) : area.sel.left]
 
-    def dictation_peek_right():
-        print("peeking")
-
-        area = draft_manager.area
-        return area[area.sel.right : area.sel.right + 50]
+#     def dictation_peek_right():
+#         area = draft_manager.area
+#         return area[area.sel.right : area.sel.right + 50]
 
 
 @ctx.action_class("edit")
@@ -36,12 +34,6 @@ class edit_actions:
             result = area[area.sel.left : area.sel.right]
             return result
         return ""
-
-    def dictation_peek_right():
-        print("peeking")
-
-        area = draft_manager.area
-        return area[area.sel.right : area.sel.right + 50]
 
 
 @mod.action_class
