@@ -36,14 +36,12 @@ clear <user.draft_anchor> through <user.draft_anchor>:
   user.draft_select("{draft_anchor}", "{draft_anchor}", 1)
   key(backspace)
 
-# Make a word title case
-word title <user.draft_anchor>:
-    user.draft_change_case("{draft_anchor}", "title")
+# reformat word
+<user.formatters> word <user.draft_anchor>:
+  user.draft_select("{draft_anchor}", "", 1)
+  user.formatters_reformat_selection(user.formatters)
 
-# Make a word lower case
-word lower <user.draft_anchor>:
-    user.draft_change_case("{draft_anchor}", "lower")
-
-# Make a word all caps case
-word upper <user.draft_anchor>:
-    user.draft_change_case("{draft_anchor}", "upper")
+# reformat range
+<user.formatters> <user.draft_anchor> through <user.draft_anchor>:
+    user.draft_select(draft_anchor_1, draft_anchor_2, formatters)
+    user.formatters_reformat_selection(user.formatters)
