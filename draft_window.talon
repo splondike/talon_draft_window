@@ -1,6 +1,9 @@
 # These are active when we have focus on the draft window
 title:Talon Draft
 -
+settings():
+  user.context_sensitive_dictation = 1
+  
 # Replace a single word with a phrase
 replace <user.draft_anchor> with <user.text>:
   user.draft_select("{draft_anchor}")

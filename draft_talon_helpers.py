@@ -4,8 +4,16 @@ from talon import ui, Module, Context
 from .draft_ui import DraftManager
 
 mod = Module()
+
+# ctx is for toggling the draft_window_showing
+# and should not have any match to allow submit when
+# the draft window is not focused
 ctx = Context()
-ctx.matches = r"""
+
+# use ctx_focused to override actions that must be
+# active only when the draft window has focus
+ctx_focused = Context()
+ctx_focused.matches = r"""
 title: Talon Draft
 """
 
@@ -15,18 +23,18 @@ draft_manager = DraftManager()
 
 
 # for rntz's context-sensitive dictation
-# @ctx.action_class("user")
-# class dictation_actions:
-#     def dictation_peek_left(clobber=False):
-#         area = draft_manager.area
-#         return area[max(0, area.sel.left - 50) : area.sel.left]
+@ctx_focused.action_class("user")
+class dictation_actions:
+    def dictation_peek_left(clobber=False):
+        area = draft_manager.area
+        return area[max(0, area.sel.left - 50) : area.sel.left]
 
-#     def dictation_peek_right():
-#         area = draft_manager.area
-#         return area[area.sel.right : area.sel.right + 50]
+    def dictation_peek_right():
+        area = draft_manager.area
+        return area[area.sel.right : area.sel.right + 50]
 
 
-@ctx.action_class("edit")
+@ctx_focused.action_class("edit")
 class edit_actions:
     def selected_text() -> str:
         area = draft_manager.area
