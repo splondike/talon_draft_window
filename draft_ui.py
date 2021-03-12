@@ -1,11 +1,48 @@
 from typing import Optional
-from talon import Context
+import re
+
 from talon.experimental.textarea import (
     TextArea,
     Span,
     DarkThemeLabels,
     LightThemeLabels
 )
+
+
+def iterate_anchor_labels():
+    """
+    Produces an iterator of possible anchor labels
+    """
+
+    characters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
+    for c in characters:
+        yield c
+
+    for c in characters:
+        for d in characters:
+            yield f"{c}{d}"
+
+word_matcher = re.compile(r"([^\s]+)(\s*)")
+def calculate_text_anchors(text):
+    """
+    Produces an iterator of (anchor, start_word_index, end_word_index, last_space_index)
+    tuples from the given text. Each tuple indicates a particular point you may want to 
+    reference when editing along with some useful ranges you may want to operate on.
+
+    - *index is just a character offset from the start of the string (e.g. the first character is at index 0)
+    - end_word_index is the index of the last character included in the anchor. That
+      is, if you want to do a slice you'll need to add 1 like [start:end + 1]
+    - anchor is a short piece of text you can use to identify it (e.g. 'a', or '1').
+    """
+    anchor_labels = iterate_anchor_labels()
+
+    for match in word_matcher.finditer(text):
+        yield (
+            next(anchor_labels),
+            match.start(),
+            match.end() - len(match.group(2)) - 1,
+            match.end() - 1
+        )
 
 
 class DraftManager:
@@ -18,8 +55,9 @@ class DraftManager:
         self.area.title = "Talon Draft"
         self.area.value = ""
         self.area.register("label", self._update_labels)
+        self.set_theme()
 
-    def set_styling(
+    def set_theme(
         self,
         theme="dark",
         text_size=20,
@@ -113,8 +151,7 @@ class DraftManager:
         if include_trailing_whitespace:
             end_index = last_space_index
 
-        self.area.sel = Span(start_index, end_index)
-        # print(self.area.sel)
+        self.area.sel = Span(start_index, end_index + 1)
 
     def position_caret(self, anchor, after=False):
         """
@@ -125,85 +162,21 @@ class DraftManager:
         index = end_index if after else start_index
 
         self.area.sel = index
-        # selff.area.
 
     def anchor_to_range(self, anchor):
-        anchors_data = self._calculate_anchors(self._get_visible_text())
+        anchors_data = calculate_text_anchors(self._get_visible_text())
         for loop_anchor, start_index, end_index, last_space_index in anchors_data:
             if anchor == loop_anchor:
                 return (start_index, end_index, last_space_index)
 
         raise RuntimeError(f"Couldn't find anchor {anchor}")
 
-    @staticmethod
-    def _iterate_anchor_labels():
-        characters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
-        for c in characters:
-            yield c
-
-        for c in characters:
-            for d in characters:
-                yield f"{c}{d}"
-
-    @classmethod
-    def _calculate_anchors(cls, text):
-        """
-        Produces an iterator of (anchor, start_word_index, end_word_index, last_space_index)
-        tuples from the given text. Each tuple indicates a particular point you may want to 
-        reference when editing along with some useful ranges you may want to operate on.
-
-        - *index is just a character offset from the start of the string (e.g. the first character is at index 0)
-        - anchor is a short piece of text you can use to identify it (e.g. 'a', or '1').
-        """
-
-        line_idx = 1
-        char_idx = 0
-        word_start_index = None
-        word_end_index = None
-        anchor_labels = cls._iterate_anchor_labels()
-
-        state = "newline"
-
-        for curr_index, character in enumerate(text):
-            next_state = {" ": "space", "\n": "newline"}.get(character, "word")
-
-            # space -> word, space -> newline, word -> newline should yield
-            should_yield = word_start_index is not None and (
-                next_state == "newline" or (state == "space" and next_state != "space")
-            )
-            if should_yield:
-                yield (
-                    next(anchor_labels),
-                    word_start_index,
-                    word_end_index or curr_index,
-                    curr_index,
-                )
-                word_start_index = None
-                word_end_index = None
-                last_space_index = None
-
-            if state != "word" and next_state == "word":
-                word_start_index = curr_index
-
-            if state == "word" and next_state != "word":
-                word_end_index = curr_index
-
-            if next_state == "newline":
-                line_idx += 1
-                char_idx = 0
-            else:
-                char_idx += 1
-            state = next_state
-
-        if word_start_index is not None:
-            yield (next(anchor_labels), word_start_index, len(text), len(text))
-
     def _update_labels(self, _visible_text):
         """
         Updates the position of the labels displayed on top of each word
         """
 
-        anchors_data = self._calculate_anchors(self._get_visible_text())
+        anchors_data = calculate_text_anchors(self._get_visible_text())
         return [
             (Span(start_index, end_index), anchor)
             for anchor, start_index, end_index, _ in anchors_data
@@ -218,7 +191,7 @@ if False:
     # Some code for testing, change above False to True and edit as desired
     draft_manager = DraftManager()
     draft_manager.show(
-        "This is some text\nand another line of text and some more text so that the line gets so long that it wraps a bit.\nAnd a final sentence"
+        "This is a line of text\nand another line of text and some more text so that the line gets so long that it wraps a bit.\nAnd a final sentence"
     )
     draft_manager.reposition(xpos=100, ypos=100)
     draft_manager.select_text("c")

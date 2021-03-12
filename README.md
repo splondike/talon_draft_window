@@ -16,3 +16,11 @@ Once that's set up, an example voice command session might go like:
 ## Customising
 
 If you want to change the display of the window you can do by adding some settings to one of your .talon files. See `settings.talon.example` for more details.
+
+# Running tests
+
+There are unit tests that you can run from the repository root like this (assuming your directory is called talon\_draft\_window):
+
+    (cd ../ && python -m unittest talon_draft_window.test_draft_ui)
+
+The reason for the weirdness is because we have everything in the same directory and are doing relative imports.
