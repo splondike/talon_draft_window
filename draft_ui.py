@@ -30,8 +30,8 @@ def calculate_text_anchors(text):
     reference when editing along with some useful ranges you may want to operate on.
 
     - *index is just a character offset from the start of the string (e.g. the first character is at index 0)
-    - end_word_index is the index of the last character included in the anchor. That
-      is, if you want to do a slice you'll need to add 1 like [start:end + 1]
+    - end_word_index is the index of the character after the last one included in the
+      anchor. That is, you can use it with a slice directly like [start:end]
     - anchor is a short piece of text you can use to identify it (e.g. 'a', or '1').
     """
     anchor_labels = iterate_anchor_labels()
@@ -40,8 +40,8 @@ def calculate_text_anchors(text):
         yield (
             next(anchor_labels),
             match.start(),
-            match.end() - len(match.group(2)) - 1,
-            match.end() - 1
+            match.end() - len(match.group(2)),
+            match.end()
         )
 
 
@@ -151,7 +151,7 @@ class DraftManager:
         if include_trailing_whitespace:
             end_index = last_space_index
 
-        self.area.sel = Span(start_index, end_index + 1)
+        self.area.sel = Span(start_index, end_index)
 
     def position_caret(self, anchor, after=False):
         """
@@ -195,4 +195,3 @@ if False:
     )
     draft_manager.reposition(xpos=100, ypos=100)
     draft_manager.select_text("c")
-
