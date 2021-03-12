@@ -5,13 +5,12 @@ from .draft_ui import DraftManager
 
 mod = Module()
 
-# ctx is for toggling the draft_window_showing
-# and should not have any match to allow submit when
-# the draft window is not focused
+# ctx is for toggling the draft_window_showing variable
+# which lets you execute actions whenever the window is visible.
 ctx = Context()
 
-# use ctx_focused to override actions that must be
-# active only when the draft window has focus
+# ctx_focused is active only when the draft window is focussed. This
+# lets you execute actions under that condition.
 ctx_focused = Context()
 ctx_focused.matches = r"""
 title: Talon Draft
@@ -22,9 +21,12 @@ mod.tag("draft_window_showing", desc="Tag set when draft window showing")
 draft_manager = DraftManager()
 
 
-# for rntz's context-sensitive dictation
 @ctx_focused.action_class("user")
-class dictation_actions:
+class ContextSensitiveDictationActions:
+    """
+    Override these actions to assist 'Smart dictation mode'.
+    see https://github.com/knausj85/knausj_talon/pull/356
+    """
     def dictation_peek_left(clobber=False):
         area = draft_manager.area
         return area[max(0, area.sel.left - 50) : area.sel.left]
@@ -35,7 +37,11 @@ class dictation_actions:
 
 
 @ctx_focused.action_class("edit")
-class edit_actions:
+class EditActions:
+    """
+    Make default edit actions more efficient.
+    """
+
     def selected_text() -> str:
         area = draft_manager.area
         if area.sel:
