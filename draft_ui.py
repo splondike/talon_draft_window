@@ -110,24 +110,6 @@ class DraftManager:
 
         raise RuntimeError(f"Couldn't find anchor {anchor}")
 
-    def change_case(self, anchor, case):
-        """
-        Change the case of the given word (Title case, UPPER case, lower case).
-        """
-
-        start_index, end_index, _ = self.anchor_to_range(anchor)
-        text = self.area[start_index:end_index]
-        if case == "lower":
-            updated_text = text.lower()
-        elif case == "upper":
-            updated_text = text.upper()
-        elif case == "title":
-            updated_text = text[0].upper() + text[1:]
-        else:
-            raise AssertionError("Invalid case")
-
-        self.area.replace(Span(start_index, end_index), updated_text)
-
     @staticmethod
     def _iterate_anchor_labels():
         characters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
