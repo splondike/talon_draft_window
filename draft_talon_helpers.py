@@ -4,14 +4,49 @@ from talon import ui, Module, Context
 from .draft_ui import DraftManager
 
 mod = Module()
+
+# ctx is for toggling the draft_window_showing
+# and should not have any match to allow submit when
+# the draft window is not focused
 ctx = Context()
+
+# use ctx_focused to override actions that must be
+# active only when the draft window has focus
+ctx_focused = Context()
+ctx_focused.matches = r"""
+title: Talon Draft
+"""
+
 mod.tag("draft_window_showing", desc="Tag set when draft window showing")
 
 draft_manager = DraftManager()
 
+
+# for rntz's context-sensitive dictation
+@ctx_focused.action_class("user")
+class dictation_actions:
+    def dictation_peek_left(clobber=False):
+        area = draft_manager.area
+        return area[max(0, area.sel.left - 50) : area.sel.left]
+
+    def dictation_peek_right():
+        area = draft_manager.area
+        return area[area.sel.right : area.sel.right + 50]
+
+
+@ctx_focused.action_class("edit")
+class edit_actions:
+    def selected_text() -> str:
+        area = draft_manager.area
+        if area.sel:
+            result = area[area.sel.left : area.sel.right]
+            return result
+        return ""
+
+
 @mod.action_class
 class Actions:
-    def draft_show(text: Optional[str]=None):
+    def draft_show(text: Optional[str] = None):
         """
         Shows draft window
         """
@@ -28,9 +63,8 @@ class Actions:
         ctx.tags = []
 
     def draft_select(
-            start_anchor: str,
-            end_anchor: str="",
-            include_trailing_whitespace: int=0):
+        start_anchor: str, end_anchor: str = "", include_trailing_whitespace: int = 0
+    ):
         """
         Selects text in the draft window
         """
@@ -38,28 +72,15 @@ class Actions:
         draft_manager.select_text(
             start_anchor,
             end_anchor=None if end_anchor == "" else end_anchor,
-            include_trailing_whitespace=include_trailing_whitespace == 1
+            include_trailing_whitespace=include_trailing_whitespace == 1,
         )
 
-    def draft_position_caret(anchor: str, after: int=0):
+    def draft_position_caret(anchor: str, after: int = 0):
         """
         Positions the caret in the draft window
         """
 
-        draft_manager.position_caret(
-            anchor,
-            after=after == 1
-        )
-
-    def draft_change_case(anchor: str, case: str):
-        """
-        Positions the caret in the draft window
-        """
-
-        draft_manager.change_case(
-            anchor,
-            case
-        )
+        draft_manager.position_caret(anchor, after=after == 1)
 
     def draft_get_text() -> str:
         """
@@ -73,12 +94,9 @@ class Actions:
         Resize the draft window.
         """
 
-        draft_manager.reposition(
-            width=width,
-            height=height
-        )
+        draft_manager.reposition(width=width, height=height)
 
-    def draft_named_move(name: str, screen_number: Optional[int]=None):
+    def draft_named_move(name: str, screen_number: Optional[int] = None):
         """
         Lets you move the window to the top, bottom, left, right, or middle
         of the screen.
@@ -89,25 +107,23 @@ class Actions:
         xpos = (screen.width - window_rect.width) / 2
         ypos = (screen.height - window_rect.height) / 2
 
-        if name == 'top':
+        if name == "top":
             ypos = 50
-        elif name == 'bottom':
+        elif name == "bottom":
             ypos = screen.height - window_rect.height - 50
-        elif name == 'left':
+        elif name == "left":
             xpos = 50
-        elif name == 'right':
+        elif name == "right":
             xpos = screen.width - window_rect.width - 50
-        elif name == 'middle':
+        elif name == "middle":
             # That's the default values
             pass
 
-        draft_manager.reposition(
-            xpos=xpos,
-            ypos=ypos
-        )
+        draft_manager.reposition(xpos=xpos, ypos=ypos)
 
 
 # Some capture groups we need
+
 
 @mod.capture(rule="{self.letter}+")
 def draft_anchor(m) -> str:

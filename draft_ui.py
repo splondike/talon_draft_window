@@ -1,13 +1,9 @@
 from typing import Optional
-
-from talon.experimental.textarea import (
-    TextArea,
-    Span,
-    DarkThemeLabels
-)
+from talon import Context
+from talon.experimental.textarea import TextArea, Span, DarkThemeLabels
 
 
-class DraftManager():
+class DraftManager:
     """
     API to the draft window
     """
@@ -15,14 +11,11 @@ class DraftManager():
     def __init__(self):
         self.area = TextArea()
         self.area.title = "Talon Draft"
-        self.area.theme = DarkThemeLabels(
-            text_size=20,
-            label_size=20
-        )
-        self.area.value = ''
-        self.area.register('label', self._update_labels)
+        self.area.theme = DarkThemeLabels(text_size=20, label_size=20)
+        self.area.value = ""
+        self.area.register("label", self._update_labels)
 
-    def show(self, text: Optional[str]=None):
+    def show(self, text: Optional[str] = None):
         """
         Show the window. If text is None then keep the old contents,
         otherwise set the text to the given value.
@@ -46,7 +39,7 @@ class DraftManager():
 
         return self.area.value
 
-    def get_rect(self) -> 'talon.types.Rect':
+    def get_rect(self) -> "talon.types.Rect":
         """
         Get the Rect for the window
         """
@@ -54,11 +47,12 @@ class DraftManager():
         return self.area.rect
 
     def reposition(
-            self,
-            xpos: Optional[int]=None,
-            ypos: Optional[int]=None,
-            width: Optional[int]=None,
-            height: Optional[int]=None):
+        self,
+        xpos: Optional[int] = None,
+        ypos: Optional[int] = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+    ):
         """
         Move the window or resize it without having to change all properties.
         """
@@ -78,7 +72,9 @@ class DraftManager():
 
         self.area.rect = rect
 
-    def select_text(self, start_anchor, end_anchor=None, include_trailing_whitespace=False):
+    def select_text(
+        self, start_anchor, end_anchor=None, include_trailing_whitespace=False
+    ):
         """
         Selects the word corresponding to start_anchor. If end_anchor supplied, selects
         from start_anchor to the end of end_anchor. If include_trailing_whitespace=True
@@ -93,6 +89,7 @@ class DraftManager():
             end_index = last_space_index
 
         self.area.sel = Span(start_index, end_index)
+        # print(self.area.sel)
 
     def position_caret(self, anchor, after=False):
         """
@@ -103,6 +100,7 @@ class DraftManager():
         index = end_index if after else start_index
 
         self.area.sel = index
+        # selff.area.
 
     def anchor_to_range(self, anchor):
         anchors_data = self._calculate_anchors(self._get_visible_text())
@@ -119,11 +117,11 @@ class DraftManager():
 
         start_index, end_index, _ = self.anchor_to_range(anchor)
         text = self.area[start_index:end_index]
-        if case == 'lower':
+        if case == "lower":
             updated_text = text.lower()
-        elif case == 'upper':
+        elif case == "upper":
             updated_text = text.upper()
-        elif case == 'title':
+        elif case == "title":
             updated_text = text[0].upper() + text[1:]
         else:
             raise AssertionError("Invalid case")
@@ -132,14 +130,13 @@ class DraftManager():
 
     @staticmethod
     def _iterate_anchor_labels():
-        characters = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+        characters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
         for c in characters:
             yield c
 
         for c in characters:
             for d in characters:
                 yield f"{c}{d}"
-
 
     @classmethod
     def _calculate_anchors(cls, text):
@@ -158,37 +155,33 @@ class DraftManager():
         word_end_index = None
         anchor_labels = cls._iterate_anchor_labels()
 
-        state = 'newline'
+        state = "newline"
 
         for curr_index, character in enumerate(text):
-            next_state = {
-                ' ': 'space',
-                '\n': 'newline'
-            }.get(character, 'word')
+            next_state = {" ": "space", "\n": "newline"}.get(character, "word")
 
             # space -> word, space -> newline, word -> newline should yield
-            should_yield = (
-                word_start_index is not None and
-                (next_state == 'newline' or (state == 'space' and next_state != 'space'))
+            should_yield = word_start_index is not None and (
+                next_state == "newline" or (state == "space" and next_state != "space")
             )
             if should_yield:
                 yield (
                     next(anchor_labels),
                     word_start_index,
                     word_end_index or curr_index,
-                    curr_index
+                    curr_index,
                 )
                 word_start_index = None
                 word_end_index = None
                 last_space_index = None
 
-            if state != 'word' and next_state == 'word':
+            if state != "word" and next_state == "word":
                 word_start_index = curr_index
 
-            if state == 'word' and next_state != 'word':
+            if state == "word" and next_state != "word":
                 word_end_index = curr_index
 
-            if next_state == 'newline':
+            if next_state == "newline":
                 line_idx += 1
                 char_idx = 0
             else:
@@ -196,12 +189,7 @@ class DraftManager():
             state = next_state
 
         if word_start_index is not None:
-            yield (
-                next(anchor_labels),
-                word_start_index,
-                len(text),
-                len(text)
-            )
+            yield (next(anchor_labels), word_start_index, len(text), len(text))
 
     def _update_labels(self, _visible_text):
         """
@@ -211,7 +199,6 @@ class DraftManager():
         anchors_data = self._calculate_anchors(self._get_visible_text())
         return [
             (Span(start_index, end_index), anchor)
-
             for anchor, start_index, end_index, _ in anchors_data
         ]
 
@@ -219,9 +206,13 @@ class DraftManager():
         # Placeholder for a future method of getting this
         return self.area.value
 
+
 if False:
     # Some code for testing, change above False to True and edit as desired
     draft_manager = DraftManager()
-    draft_manager.show("This is some text\nand another line of text and some more text so that the line gets so long that it wraps a bit.\nAnd a final sentence")
+    draft_manager.show(
+        "This is some text\nand another line of text and some more text so that the line gets so long that it wraps a bit.\nAnd a final sentence"
+    )
     draft_manager.reposition(xpos=100, ypos=100)
-    draft_manager.select_text('c')
+    draft_manager.select_text("c")
+
