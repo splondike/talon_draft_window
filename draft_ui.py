@@ -1,6 +1,11 @@
 from typing import Optional
 from talon import Context
-from talon.experimental.textarea import TextArea, Span, DarkThemeLabels
+from talon.experimental.textarea import (
+    TextArea,
+    Span,
+    DarkThemeLabels,
+    LightThemeLabels
+)
 
 
 class DraftManager:
@@ -11,9 +16,29 @@ class DraftManager:
     def __init__(self):
         self.area = TextArea()
         self.area.title = "Talon Draft"
-        self.area.theme = DarkThemeLabels(text_size=20, label_size=20)
         self.area.value = ""
         self.area.register("label", self._update_labels)
+
+    def set_styling(
+        self,
+        theme="dark",
+        text_size=20,
+        label_size=20,
+        label_color=None
+    ):
+        """
+        Allow settings the style of the draft window. Will dynamically
+        update the style based on the passed in parameters.
+        """
+
+        area_theme = DarkThemeLabels if theme == "dark" else LightThemeLabels
+        theme_changes = {
+            "text_size": text_size,
+            "label_size": label_size,
+        }
+        if label_color is not None:
+            theme_changes["label"] = label_color
+        self.area.theme = area_theme(**theme_changes)
 
     def show(self, text: Optional[str] = None):
         """
