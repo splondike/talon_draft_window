@@ -55,9 +55,9 @@ class DraftManager:
         self.area.title = "Talon Draft"
         self.area.value = ""
         self.area.register("label", self._update_labels)
-        self.set_theme()
+        self.set_styling()
 
-    def set_theme(
+    def set_styling(
         self,
         theme="dark",
         text_size=20,
