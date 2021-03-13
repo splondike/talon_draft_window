@@ -1,6 +1,5 @@
 from typing import Optional
-
-from talon import ui, settings, Module, Context
+from talon import ui, settings, Module, Context, actions
 from .draft_ui import DraftManager
 
 mod = Module()
@@ -21,13 +20,13 @@ setting_theme = mod.setting(
     "draft_window_theme",
     type=str,
     default="dark",
-    desc="Sets the main colors of the window, one of 'dark' or 'light'"
+    desc="Sets the main colors of the window, one of 'dark' or 'light'",
 )
 setting_label_size = mod.setting(
     "draft_window_label_size",
     type=int,
     default=20,
-    desc="Sets the size of the word labels used in the draft window"
+    desc="Sets the size of the word labels used in the draft window",
 )
 setting_label_color = mod.setting(
     "draft_window_label_color",
@@ -36,13 +35,13 @@ setting_label_color = mod.setting(
     desc=(
         "Sets the color of the word labels used in the draft window. "
         "E.g. 00ff00 would be green"
-    )
+    ),
 )
 setting_text_size = mod.setting(
     "draft_window_text_size",
     type=int,
     default=20,
-    desc="Sets the size of the text used in the draft window"
+    desc="Sets the size of the text used in the draft window",
 )
 
 
@@ -54,13 +53,15 @@ def _update_draft_style(*args):
         **{
             arg: setting.get()
             for setting, arg in (
-                (setting_theme, 'theme'),
-                (setting_label_size, 'label_size'),
-                (setting_label_color, 'label_color'),
-                (setting_text_size, 'text_size'),
+                (setting_theme, "theme"),
+                (setting_label_size, "label_size"),
+                (setting_label_color, "label_color"),
+                (setting_text_size, "text_size"),
             )
         }
     )
+
+
 settings.register("", _update_draft_style)
 
 
@@ -70,6 +71,7 @@ class ContextSensitiveDictationActions:
     Override these actions to assist 'Smart dictation mode'.
     see https://github.com/knausj85/knausj_talon/pull/356
     """
+
     def dictation_peek_left(clobber=False):
         area = draft_manager.area
         return area[max(0, area.sel.left - 50) : area.sel.left]
@@ -77,6 +79,10 @@ class ContextSensitiveDictationActions:
     def dictation_peek_right():
         area = draft_manager.area
         return area[area.sel.right : area.sel.right + 50]
+
+    def paste(text: str):
+        # todo: remove once user.paste works reliably with the draft window
+        actions.insert(text)
 
 
 @ctx_focused.action_class("edit")
@@ -94,6 +100,8 @@ class EditActions:
 
 
 from talon import cron
+
+
 class UndoWorkaround:
     """
     Workaround for the experimental textarea's undo being character by character.
@@ -183,7 +191,8 @@ class UndoWorkaround:
         curr_state = (curr_val, curr_sel)
 
         state_stack_mismatch = (
-            len(cls.undo_stack) == 0 or
+            len(cls.undo_stack) == 0
+            or
             # Only want to update the undo stack if the value has changed, not just
             # the selection
             curr_state[0] != cls.undo_stack[-1][0]
@@ -197,10 +206,7 @@ class UndoWorkaround:
             cls.pending_undo = curr_state
         elif not state_stack_mismatch and len(cls.undo_stack) > 0:
             # Remember the cursor position in the undo stack for the current text value
-            cls.undo_stack[-1] = (
-                cls.undo_stack[-1][0],
-                curr_sel
-            )
+            cls.undo_stack[-1] = (cls.undo_stack[-1][0], curr_sel)
         else:
             # The text area text is not changing, do nothing
             pass
@@ -209,6 +215,7 @@ class UndoWorkaround:
 if UndoWorkaround.enable_workaround:
     ctx_focused.action("edit.undo")(UndoWorkaround.perform_undo)
     ctx_focused.action("edit.redo")(UndoWorkaround.perform_redo)
+
 
 @mod.action_class
 class Actions:
