@@ -9,39 +9,55 @@ from talon.experimental.textarea import (
 )
 
 
-def iterate_anchor_labels():
-    """
-    Produces an iterator of possible anchor labels
-    """
-
-    characters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
-    for c in characters:
-        yield c
-
-    for c in characters:
-        for d in characters:
-            yield f"{c}{d}"
-
 word_matcher = re.compile(r"([^\s]+)(\s*)")
-def calculate_text_anchors(text):
+def calculate_text_anchors(text, cursor_position, anchor_labels=None):
     """
     Produces an iterator of (anchor, start_word_index, end_word_index, last_space_index)
     tuples from the given text. Each tuple indicates a particular point you may want to 
     reference when editing along with some useful ranges you may want to operate on.
 
+    - text is the text you want to process.
+    - cursor_position is the current position of the cursor, anchors will be placed around
+      this.
+    - anchor_labels is a list of characters you want to use for your labels.
     - *index is just a character offset from the start of the string (e.g. the first character is at index 0)
     - end_word_index is the index of the character after the last one included in the
       anchor. That is, you can use it with a slice directly like [start:end]
     - anchor is a short piece of text you can use to identify it (e.g. 'a', or '1').
     """
-    anchor_labels = iterate_anchor_labels()
+    anchor_labels = anchor_labels or "abcdefghijklmnopqrstuvwxyz"
 
+    if len(text) == 0:
+        return []
+
+    # Find all the word spans
+    matches = []
+    cursor_idx = None
     for match in word_matcher.finditer(text):
-        yield (
-            next(anchor_labels),
+        matches.append((
             match.start(),
             match.end() - len(match.group(2)),
             match.end()
+        ))
+        if matches[-1][0] <= cursor_position and matches[-1][2] >= cursor_position:
+            cursor_idx = len(matches) - 1
+
+    # Now work out what range of those matches are getting an anchor. The aim is
+    # to centre the anchors around the cursor position, but also to use all the
+    # anchors.
+    anchors_before_cursor = len(anchor_labels) // 2
+    anchor_start_idx = max(0, cursor_idx - anchors_before_cursor)
+    anchor_end_idx = min(len(matches), anchor_start_idx + len(anchor_labels))
+    anchor_start_idx = max(0, anchor_end_idx - len(anchor_labels))
+
+    # Now add anchors to the selected matches
+    for i, anchor in zip(range(anchor_start_idx, anchor_end_idx), anchor_labels):
+        word_start, word_end, whitespace_end = matches[i]
+        yield (
+            anchor,
+            word_start,
+            word_end,
+            whitespace_end
         )
 
 
@@ -164,7 +180,7 @@ class DraftManager:
         self.area.sel = index
 
     def anchor_to_range(self, anchor):
-        anchors_data = calculate_text_anchors(self._get_visible_text())
+        anchors_data = calculate_text_anchors(self._get_visible_text(), self.area.sel.left)
         for loop_anchor, start_index, end_index, last_space_index in anchors_data:
             if anchor == loop_anchor:
                 return (start_index, end_index, last_space_index)
@@ -176,7 +192,7 @@ class DraftManager:
         Updates the position of the labels displayed on top of each word
         """
 
-        anchors_data = calculate_text_anchors(self._get_visible_text())
+        anchors_data = calculate_text_anchors(self._get_visible_text(), self.area.sel.left)
         return [
             (Span(start_index, end_index), anchor)
             for anchor, start_index, end_index, _ in anchors_data
