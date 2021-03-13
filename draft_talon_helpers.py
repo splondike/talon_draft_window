@@ -137,7 +137,7 @@ class UndoWorkaround:
             return
 
         curr_text = draft_manager.area.value
-        curr_sel = draft_manager.area.sel
+        curr_sel = (draft_manager.area.sel.left, draft_manager.area.sel.right)
         text, sel = cls.undo_stack[-1]
         if text == curr_text:
             cls.undo_stack.pop()
@@ -162,18 +162,13 @@ class UndoWorkaround:
         if len(cls.redo_stack) == 0:
             return
 
-        curr_text = draft_manager.area.value
-        curr_sel = draft_manager.area.sel
         text, sel = cls.redo_stack.pop()
-
-        # Remember the current state in the undo stack if we haven't already
-        if len(cls.undo_stack) == 0 or cls.undo_stack[-1][0] != curr_text:
-            cls.undo_stack.append((curr_text, curr_sel))
 
         draft_manager.area.value = text
         draft_manager.area.sel = sel
 
         cls.pending_undo = (text, sel)
+        cls.undo_stack.append((text, sel))
 
     @classmethod
     def _log_changes(cls):
@@ -200,6 +195,12 @@ class UndoWorkaround:
             cls.redo_stack = []
         elif cls.pending_undo != curr_state:
             cls.pending_undo = curr_state
+        elif not state_stack_mismatch and len(cls.undo_stack) > 0:
+            # Remember the cursor position in the undo stack for the current text value
+            cls.undo_stack[-1] = (
+                cls.undo_stack[-1][0],
+                curr_sel
+            )
         else:
             # The text area text is not changing, do nothing
             pass
