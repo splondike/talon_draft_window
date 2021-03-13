@@ -1,6 +1,6 @@
 from typing import Optional
 
-from talon import ui, Module, Context
+from talon import ui, Module, Context, actions
 from .draft_ui import DraftManager
 
 mod = Module()
@@ -32,6 +32,10 @@ class dictation_actions:
     def dictation_peek_right():
         area = draft_manager.area
         return area[area.sel.right : area.sel.right + 50]
+
+    def paste(text: str):
+        # todo: remove once user.paste works reliably with the draft window
+        actions.insert(text)
 
 
 @ctx_focused.action_class("edit")
