@@ -294,6 +294,9 @@ class Actions:
             # That's the default values
             pass
 
+        # Adjust for the fact that the screen may not be at 0,0.
+        xpos += screen.x
+        ypos += screen.y
         draft_manager.reposition(xpos=xpos, ypos=ypos)
 
 
