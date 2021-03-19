@@ -1,3 +1,7 @@
+# Development of this script has moved to [knausj_talon](https://github.com/knausj85/knausj_talon/tree/master/talon_draft_window)
+
+---
+
 This reposiory is a [Talon](https://talonvoice.com/) script that allows you to more easily edit prose style text via a task-specific UI.
 
 # Usage
